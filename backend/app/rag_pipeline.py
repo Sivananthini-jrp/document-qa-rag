@@ -13,7 +13,8 @@ from .config import settings
 class GeminiEmbedder:
     def __init__(self):
         # Uses GEMINI_API_KEY from environment
-        self.client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
+        from .config import settings
+        self.client = genai.Client(api_key=settings.GEMINI_API_KEY) 
 
     def embed_documents(self, texts):
         prepared_texts = [f"title: none | text: {t}" for t in texts]
