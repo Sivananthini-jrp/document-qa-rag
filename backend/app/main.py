@@ -2,7 +2,8 @@ from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List
 from .models import AskRequest, AskResponse
-from .rag_pipeline import pipeline
+# Notice: we are importing pipeline from the updated rag_pipeline file
+from .rag_pipeline import pipeline 
 
 app = FastAPI(title="Document QA RAG API")
 
@@ -19,12 +20,10 @@ def health():
 
 @app.get("/documents")
 def list_documents():
-    """List all unique uploaded document names."""
     return {"documents": pipeline.store.list_sources()}
 
 @app.delete("/documents/{filename}")
 def delete_document(filename: str):
-    """Delete a document by filename and rebuild the index."""
     success = pipeline.store.delete_source(filename)
     if not success:
         raise HTTPException(status_code=404, detail="Document not found")
@@ -34,8 +33,7 @@ def delete_document(filename: str):
 async def upload(files: List[UploadFile] = File(...)):
     payload = []
     for f in files:
-        if not f.filename.lower().endswith(".pdf"):
-            continue
+        if not f.filename.lower().endswith(".pdf"): continue
         payload.append((f.filename, await f.read()))
     return pipeline.ingest_pdfs(payload)
 
@@ -46,5 +44,4 @@ def ask(req: AskRequest):
 @app.post("/reset")
 def reset():
     pipeline.store.clear()
-    pipeline.history.clear()
     return {"status": "reset"}
